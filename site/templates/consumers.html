@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumers</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Consumers</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <h2>Add Consumer</h2>
+
+    <form action="{{ url_for('add_consumer_to_db') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="municipality">Municipality:<span class="required">*</span></label></td>
+                <td><input type="text" id="municipality" name="municipality" required></td>
+            </tr>
+            <tr>
+                <td><label for="population">Population:<span class="required">*</span></label></td>
+                <td><input type="text" id="population" name="population" required></td>
+            </tr>
+            <tr>
+                <td><label for="annualConsumption">Annual Consumption (MW*h):</label></td>
+                <td><input type="text" id="annualConsumption" name="annualConsumption"></td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td class="submit-button">
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('consumers') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+    
+
+
+   <!-- Data Table -->
+   <table class="content-table">
+    <tr>
+        <th>Consumer Municipality</th>
+        <th>Population</th>
+        <th>Annual Consumption (MW*h)</th>
+        <th>Edit/Save</th>
+        <th>Delete</th>
+    </tr>
+    {% for consumer in consumers_data %}
+    <tr id="row-{{ consumer.consumerID }}">
+        <td><span data-field="municipality" contenteditable="false">{{ consumer.municipality }}</span></td>
+        {% if consumer.population == None %}
+            <td><span data-field="population" contenteditable="false">NULL</span></td>
+        {% else %}
+            <td><span data-field="population" contenteditable="false">{{ '{:,}'.format(consumer.population) }}</span></td>
+        {% endif %}
+        {% if consumer.annualConsumption == None %}
+            <td><span data-field="annualConsumption" contenteditable="false">NULL</span></td>
+        {% else %}
+            <td><span data-field="annualConsumption" contenteditable="false">{{ '{:,}'.format(consumer.annualConsumption) }}</span></td>
+        {% endif %}
+        <td>
+            <button onclick="toggleEditMode(this)">Edit</button>
+        </td>
+        <td>
+            <button onclick="confirmDelete(this)">Delete</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+
+    <!-- JavaScript to handle edit mode toggling and saving through button -->
+    <script>
+        function toggleEditMode(button) {
+            var row = button.parentNode.parentNode;
+            var fields = row.querySelectorAll('span[contenteditable="false"]');
+            var isEditMode = row.classList.toggle('edit-mode');
+
+            fields.forEach(function (field) {
+                field.contentEditable = isEditMode;
+            });
+
+            // Check if row is in edit mode
+            if (isEditMode) {
+                button.textContent = 'Save';
+                // Add a data attribute to the button to indicate it's in edit mode
+                button.dataset.editMode = 'true';
+            } else {
+                // If in edit mode, call saveChanges function
+                if (button.dataset.editMode === 'true') {
+                    saveChanges(button); // Call saveChanges() here
+                }
+                button.textContent = 'Edit';
+                // Remove the data attribute to indicate it's not in edit mode
+                button.removeAttribute('data-edit-mode');
+            }
+        }
+
+        function saveChanges(button) {
+            var row = button.parentNode.parentNode;
+            var consumerID = row.id.split('-')[1];
+            var fields = row.querySelectorAll('span[data-field][contenteditable="true"]');
+            var data = {};
+
+            fields.forEach(function (field) {
+                var fieldName = field.dataset.field;
+                var fieldValue = field.textContent.trim();
+                data[fieldName] = fieldValue;
+            });
+
+            // Send the updated data to the server using an HTTP POST request
+            fetch(`/update_consumer/${consumerID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Update the UI to show the saved changes
+                        fields.forEach(field => field.contentEditable = false);
+                        row.classList.remove('edit-mode');
+                        button.textContent = 'Edit';
+                    } else {
+                        alert('Failed to save changes. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving changes. Please try again later.');
+                });
+        }
+        function confirmDelete(button) {
+            var row = button.parentNode.parentNode;
+            var municipality = row.querySelector('span[data-field="municipality"]').textContent;
+
+            if (confirm("Are you sure you want to delete " + municipality + "?")) {
+                deleteConsumer(row);
+            }
+        }
+
+        function deleteConsumer(row) {
+            var consumerID = row.id.split('-')[1];
+
+            // Send the delete request to the server using an HTTP POST request
+            fetch(`/delete_consumer/${consumerID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Remove the row from the table
+                        row.remove();
+                    } else {
+                        alert('Failed to delete consumer. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting consumer. Please try again later.');
+                });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Types</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Energy Types</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <!-- Add Energy Type Button -->
+    <h2>Add Energy Type</h2>
+
+    <form action="{{ url_for('add_energy_type_to_db') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="energyName">Energy Type Name:<span class="required">*</span></label></td>
+                <td><input type="text" id="energyName" name="energyName" required></td>
+            </tr>
+            <tr>
+                <td><label for="emissionsRate">Emissions Rate (CO2-equiv tonnes/GWh):</label></td>
+                <td><input type="number" id="emissionsRate" name="emissionsRate" step="0.01"></td>
+            </tr>
+            <tr>
+                <td><label for="deathRate">Death Rate (/TWh):</label></td>
+                <td><input type="number" id="deathRate" name="deathRate" step="0.0001"></td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td class="submit-button">
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('energy_types') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+
+
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Energy Type Name</th>
+            <th>Emissions Rate (CO2-equiv tonnes/GWh) *</th>
+            <th>Death Rate (/TWh)**</th>
+            <th>Edit/Save</th>
+            <th>Delete</th>
+        </tr>
+        {% for energy_type in energy_types_data %}
+        <tr id="row-{{ energy_type.energyTypeID }}">
+            <td><span data-field="energyName" contenteditable="false">{{ energy_type.energyName }}</span></td>
+            {% if energy_type.emissionsRate == None %}
+                <td><span data-field="emissionsRate" contenteditable="false">NULL</span></td>
+            {% else %}
+                <td><span data-field="emissionsRate" contenteditable="false">{{ energy_type.emissionsRate }}</span></td>
+            {% endif %}
+            {% if energy_type.deathRate == None %}
+                <td><span data-field="deathRate" contenteditable="false">NULL</span></td>
+            {% else %}
+                <td><span data-field="deathRate" contenteditable="false">{{ '{:,.4f}'.format(energy_type.deathRate) }}</span></td>
+            {% endif %}
+            <td>
+                <button onclick="toggleEditMode(this)">Edit</button>
+            </td>
+            <td>
+                <button onclick="confirmDelete(this)">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- JavaScript to handle edit mode toggling, edit/save, and delete functionality -->
+    <script>
+        function toggleEditMode(button) {
+            var row = button.parentNode.parentNode;
+            var fields = row.querySelectorAll('span[data-field][contenteditable="false"]');
+            var isEditMode = row.classList.toggle('edit-mode');
+
+            fields.forEach(function (field) {
+                field.contentEditable = isEditMode;
+            });
+
+            // Check if row is in edit mode
+            if (isEditMode) {
+                button.textContent = 'Save';
+                // Add a data attribute to the button to indicate it's in edit mode
+                button.dataset.editMode = 'true';
+            } else {
+                // If in edit mode, call saveChanges function
+                if (button.dataset.editMode === 'true') {
+                    saveChanges(button); // Call saveChanges() here
+                }
+                button.textContent = 'Edit';
+                // Remove the data attribute to indicate it's not in edit mode
+                button.removeAttribute('data-edit-mode');
+            }
+        }
+
+        function saveChanges(button) {
+            var row = button.parentNode.parentNode;
+            var energyTypeID = row.id.split('-')[1];
+            var fields = row.querySelectorAll('span[data-field][contenteditable="true"]');
+            var data = {};
+
+            fields.forEach(function (field) {
+                var fieldName = field.dataset.field;
+                var fieldValue = field.textContent.trim();
+                data[fieldName] = fieldValue;
+            });
+
+            // Send the updated data to the server using an HTTP POST request
+            fetch(`/update_energy_type/${energyTypeID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Update the UI to show the saved changes
+                        fields.forEach(field => field.contentEditable = false);
+                        row.classList.remove('edit-mode');
+                        button.textContent = 'Edit';
+                    } else {
+                        alert('Failed to save changes. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving changes. Please try again later.');
+                });
+        }
+
+        function confirmDelete(button) {
+            var row = button.parentNode.parentNode;
+            var energyTypeName = row.querySelector('span[data-field="energyName"]').textContent;
+
+            if (confirm("Are you sure you want to delete the energy type " + energyTypeName + "?")) {
+                deleteEnergyType(row);
+            }
+        }
+
+        function deleteEnergyType(row) {
+            var energyTypeID = row.id.split('-')[1];
+
+            // Send the delete request to the server using an HTTP DELETE request
+            fetch(`/delete_energy_type/${energyTypeID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Remove the row from the table on successful deletion
+                        row.remove();
+                    } else {
+                        alert('Failed to delete the energy type. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the energy type. Please try again later.');
+                });
+        }
+    </script>
+</body>
+</html>

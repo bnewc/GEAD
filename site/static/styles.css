@@ -1,0 +1,63 @@
+/* styles.css */
+
+/* Apply basic styling to tables */
+table.content-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Add border to the table header cells */
+table.content-table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+  background-color: #f2f2f2;
+}
+
+/* Add border to the table data cells */
+table.content-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+/* Alternate row colors for better readability */
+table.content-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.required {
+  color: red;
+}
+
+/* Aligned form layout */
+.aligned-form table {
+  width: 30%;
+  border-collapse: collapse;
+}
+
+.aligned-form table td {
+  padding: 5px;
+}
+
+.aligned-form label {
+  display: block;
+  text-align: left;
+  padding-right: 30px;
+  width: 110%;
+}
+
+.aligned-form input {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Center the buttons */
+.aligned-form-button, .aligned-form .cancel-btn {
+  margin: 10px auto;
+  display: block;
+}
+
+.submit-button {
+    margin-left: 5px;
+    margin-right: 5px;
+    text-align: center
+}

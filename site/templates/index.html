@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Database Admin</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Welcome to the Energy Accessibility Database administration site!</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+</body>
+</html>

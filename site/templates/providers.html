@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Providers</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Providers</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <h2>Add Provider</h2>
+
+    <!-- Add Provider Form -->
+    <form action="{{ url_for('add_provider_to_db') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="providerName">Provider Name:<span class="required">*</span></label></td>
+                <td><input type="text" id="providerName" name="providerName" required></td>
+            </tr>
+            <tr>
+                <td><label for="orgType">Organization Type:<span class="required">*</span></label></td>
+                <td><input type="text" id="orgType" name="orgType" required></td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td class="submit-button">
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('providers') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+    
+
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Provider Name</th>
+            <th>Organization Type</th>
+            <th>Edit/Save</th>
+            <th>Delete</th>
+        </tr>
+        {% for provider in providers_data %}
+        <tr id="row-{{ provider.providerID }}">
+            <td><span data-field="providerName" contenteditable="false">{{ provider.providerName }}</span></td>
+            <td><span data-field="orgType" contenteditable="false">{{ provider.orgType }}</span></td>
+            <td>
+                <button onclick="toggleEditMode(this)">Edit</button>
+            </td>
+            <td>
+                <button onclick="confirmDelete(this)">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- JavaScript to handle edit mode toggling, edit/save, and delete functionality -->
+    <script>
+        function toggleEditMode(button) {
+            var row = button.parentNode.parentNode;
+            var fields = row.querySelectorAll('span[data-field][contenteditable="false"]');
+            var isEditMode = row.classList.toggle('edit-mode');
+
+            fields.forEach(function (field) {
+                field.contentEditable = isEditMode;
+            });
+
+            // Check if row is in edit mode
+            if (isEditMode) {
+                button.textContent = 'Save';
+                // Add a data attribute to the button to indicate it's in edit mode
+                button.dataset.editMode = 'true';
+            } else {
+                // If in edit mode, call saveChanges function
+                if (button.dataset.editMode === 'true') {
+                    saveChanges(button); // Call saveChanges() here
+                }
+                button.textContent = 'Edit';
+                // Remove the data attribute to indicate it's not in edit mode
+                button.removeAttribute('data-edit-mode');
+            }
+        }
+
+        function saveChanges(button) {
+            var row = button.parentNode.parentNode;
+            var providerID = row.id.split('-')[1];
+            var fields = row.querySelectorAll('span[data-field][contenteditable="true"]');
+            var data = {};
+
+            fields.forEach(function (field) {
+                var fieldName = field.dataset.field;
+                var fieldValue = field.textContent.trim();
+                data[fieldName] = fieldValue;
+            });
+
+            // Send the updated data to the server using an HTTP POST request
+            fetch(`/update_provider/${providerID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Update the UI to show the saved changes
+                        fields.forEach(field => field.contentEditable = false);
+                        row.classList.remove('edit-mode');
+                        button.textContent = 'Edit';
+                    } else {
+                        alert('Failed to save changes. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving changes. Please try again later.');
+                });
+        }
+
+        function confirmDelete(button) {
+            var row = button.parentNode.parentNode;
+            var providerName = row.querySelector('span[data-field="providerName"]').textContent;
+            var confirmDelete = confirm('Are you sure you want to delete the provider "' + providerName + '"?');
+
+            if (confirmDelete) {
+                // Perform the delete action using an HTTP DELETE request
+                var providerID = row.id.split('-')[1];
+                fetch(`/delete_provider/${providerID}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            // Remove the row from the table on successful deletion
+                            row.remove();
+                        } else {
+                            alert('Failed to delete the provider. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the provider. Please try again later.');
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

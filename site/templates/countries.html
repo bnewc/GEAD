@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countries</title>
+    <!-- Add your CSS stylesheets here -->
+    <style>
+        /* Add a style for editable fields when in edit mode */
+        .edit-mode span[contenteditable="true"] {
+            outline: 2px solid dodgerblue;
+            /* Change the border color */
+            box-shadow: 0 0 5px dodgerblue;
+            /* Add a box shadow */
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>Countries</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <!-- Add Country Button -->
+    <h2>Add Country</h2>
+
+    <form action="{{ url_for('add_country_to_db') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="countryName">Country Name:<span class="required">*</span></label></td>
+                <td><input type="text" id="countryName" name="countryName" required></td>
+            </tr>
+            <tr>
+                <td><label for="globalRegion">Global Region:<span class="required">*</span></label></td>
+                <td><input type="text" id="globalRegion" name="globalRegion" required></td>
+            </tr>
+            <tr>
+                <td><label for="population">Population:<span class="required">*</span></label></td>
+                <td><input type="number" id="population" name="population" required></td>
+            </tr>
+            <tr>
+                <td><label for="gdp">GDP (in millions USD):</label></td>
+                <td><input type="number" id="gdp" name="gdp" step="0.01"></td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td class="submit-button">
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('countries') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+
+
+    </form>
+
+    
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Country Name</th>
+            <th>Global Region</th>
+            <th>Population</th>
+            <th>GDP (in millions USD)</th>
+            <th>Edit/Save</th>
+            <th>Delete</th> <!-- Add new Delete column header -->
+        </tr>
+        {% for country in countries_data %}
+        <tr id="row-{{ country.countryID }}">
+            <td><span data-field="countryName" contenteditable="false">{{ country.countryName }}</span></td>
+            <td><span data-field="globalRegion" contenteditable="false">{{ country.globalRegion }}</span></td>
+            <td><span data-field="population" contenteditable="false">{{ '{:,}'.format(country.population) }}</span></td>
+            {% if country.gdp == None %}
+                <td><span data-field="gdp" contenteditable="false">NULL</span></td>
+            {% else %}
+                <td><span data-field="gdp" contenteditable="false">{{ '{:,.2f}'.format(country.gdp) }}</span></td>
+            {% endif %}
+            <td>
+                <button onclick="toggleEditMode(this)">Edit</button>
+            </td>
+            <td>
+                <button onclick="confirmDelete(this)">Delete</button>
+            </td> <!-- Add new Delete button -->
+        </tr>
+        {% endfor %}
+    </table>
+
+
+
+    <!-- JavaScript to handle edit mode toggling and saving through button -->
+    <script>
+        function toggleEditMode(button) {
+            var row = button.parentNode.parentNode;
+            var fields = row.querySelectorAll('span[contenteditable="false"]');
+            var isEditMode = row.classList.toggle('edit-mode');
+
+            fields.forEach(function (field) {
+                field.contentEditable = isEditMode;
+            });
+
+            // Check if row is in edit mode
+            if (isEditMode) {
+                button.textContent = 'Save';
+                // Add a data attribute to the button to indicate it's in edit mode
+                button.dataset.editMode = 'true';
+            } else {
+                // If in edit mode, call saveChanges function
+                if (button.dataset.editMode === 'true') {
+                    saveChanges(button); // Call saveChanges() here
+                }
+                button.textContent = 'Edit';
+                // Remove the data attribute to indicate it's not in edit mode
+                button.removeAttribute('data-edit-mode');
+            }
+        }
+
+        function saveChanges(button) {
+            var row = button.parentNode.parentNode;
+            var countryID = row.id.split('-')[1];
+            var fields = row.querySelectorAll('span[data-field][contenteditable="true"]');
+            var data = {};
+
+            fields.forEach(function (field) {
+                var fieldName = field.dataset.field;
+                var fieldValue = field.textContent.trim();
+                data[fieldName] = fieldValue;
+            });
+
+            // Send the updated data to the server using an HTTP POST request
+            fetch(`/update_country/${countryID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Update the UI to show the saved changes
+                        fields.forEach(field => field.contentEditable = false);
+                        row.classList.remove('edit-mode');
+                        button.textContent = 'Edit';
+                    } else {
+                        alert('Failed to save changes. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving changes. Please try again later.');
+                });
+        }
+        function confirmDelete(button) {
+            var row = button.parentNode.parentNode;
+            var countryName = row.querySelector('span[data-field="countryName"]').textContent;
+
+            if (confirm("Are you sure you want to delete " + countryName + "?")) {
+                deleteCountry(row);
+            }
+        }
+
+        function deleteCountry(row) {
+            var countryID = row.id.split('-')[1];
+
+            // Send the delete request to the server using an HTTP POST request
+            fetch(`/delete_country/${countryID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Remove the row from the table
+                        row.remove();
+                    } else {
+                        alert('Failed to delete country. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting country. Please try again later.');
+                });
+        }
+    </script>
+</body>
+
+</html>

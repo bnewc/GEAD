@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Provisions</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Energy Provisions</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <br>
+
+    <!-- Add Energy Provision Form -->
+    <form action="{{ url_for('add_provision') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="providerID">Provider:<span class="required">*</span></label></td>
+                <td>
+                    <select id="providerID" name="providerID" required>
+                        <option value="" selected hidden>--</option>
+                        {% for provider in providers_data %}
+                            <option value="{{ provider.providerID }}">{{ provider.providerName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="consumerID">Consumer Municipality:<span class="required">*</span></label></td>
+                <td>
+                    <select id="consumerID" name="consumerID" required>
+                        <option value="" selected disabled hidden>--</option>
+                        {% for consumer in consumers_data %}
+                            <option value="{{ consumer.consumerID }}">{{ consumer.municipality }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="energyTypeID">Energy Type:<span class="required">*</span></label></td>
+                <td>
+                    <select id="energyTypeID" name="energyTypeID" required>
+                        <option value="" selected disabled hidden>--</option>
+                        {% for energy_type in energy_types_data %}
+                            <option value="{{ energy_type.energyTypeID }}">{{ energy_type.energyName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td>
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('energy_provisions') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Provider Name</th>
+            <th>Consumer Municipality</th>
+            <th>Energy Type Name</th>
+        </tr>
+        {% for provision in energy_provisions_data %}
+                <tr id="row-{{ provision.ID }}">
+                    <td>
+                        {% if provision.company == None %}
+                            <span data-field="providerName" contenteditable="false">NULL</span>
+                        {% else %}
+                            <span data-field="providerName" contenteditable="false">{{ provision.company }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span data-field="municipality" contenteditable="false">{{ provision.municipality }}</span>
+                    </td>
+                    <td>
+                        <span data-field="energyTypeName" contenteditable="false">{{ provision.energyName }}</span>
+                    </td>
+                </tr>
+        {% endfor %}
+        </table>
+
+</body>
+</html>

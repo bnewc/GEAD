@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provider Energy Types</title>
+    <!-- Add your CSS stylesheets here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Provider Energy Types</h1>
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+    <h2>Add Provider Energy Type</h2>
+
+    <!-- Add Provider Energy Type Form -->
+    <form action="{{ url_for('add_provider_energy_type') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="providerID">Provider:<span class="required">*</span></label></td>
+                <td>
+                    <select id="providerID" name="providerID" required>
+                        <option value="" selected disabled hidden>--</option>
+                        {% for provider in providers_data %}
+                        <option value="{{ provider.providerID }}">{{ provider.providerName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="energyTypeID">Energy Type:<span class="required">*</span></label></td>
+                <td>
+                    <select id="energyTypeID" name="energyTypeID" required>
+                        <option value="" selected disabled hidden>--</option>
+                        {% for energy_type in energy_types_data %}
+                        <option value="{{ energy_type.energyTypeID }}">{{ energy_type.energyName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td>
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('provider_energy_types') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Provider Name</th>
+            <th>Energy Type Name</th>
+        </tr>
+        {% for provider_energy_type in provider_energy_types_data %}
+            <tr id="row-{{ provider_energy_type.ID }}">
+                <td>
+                    <span data-field="providerName" contenteditable="false">{{ provider_energy_type.providerName }}</span>
+                </td>
+                <td>
+                    <span data-field="energyName" contenteditable="false">{{ provider_energy_type.energyName }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+
+</body>
+</html>

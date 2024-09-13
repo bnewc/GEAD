@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>National Operations</title>
+        <!-- Add your CSS stylesheets here -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+    <body>
+        <h1>National Operations</h1>
+    
+
+    <!-- Navigation Menu -->
+    <table class="menu-table">
+        <tr>
+            <th><a href="{{ url_for('index') }}">Home</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('countries') }}">Countries</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_types') }}">Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('consumers') }}">Consumers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('providers') }}">Providers</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('national_operations') }}">National Operations</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('provider_energy_types') }}">Provider Energy Types</a></th>
+            <th>|</th>
+            <th><a href="{{ url_for('energy_provisions') }}">Energy Provisions</a></th>
+        </tr>
+    </table>
+
+
+    <h2>Add National Operation</h2>
+
+    <!-- Add National Operation Form -->
+    <form action="{{ url_for('add_national_operator') }}" method="post" class="aligned-form">
+        <table>
+            <tr>
+                <td><label for="providerID">Provider:<span class="required">*</span></label></td>
+                <td>
+                    <select id="providerID" name="providerID" required>
+                        <option value="" selected disabled hidden>--</option>
+                        {% for provider in providers_data %}
+                        <option value="{{ provider.providerID }}">{{ provider.providerName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="countryID">Country:</label></td>
+                <td>
+                    <select id="countryID" name="countryID">
+                        <option value="" selected disabled hidden>--</option>
+                        <option value="">NULL</option>
+                        {% for country in countries_data %}
+                        <option value="{{ country.countryID }}">{{ country.countryName }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p><span class="required">*</span> - indicates required field</p>
+                </td>
+                <td>
+                    <button type="submit" class="submit-button">Submit</button>
+                    <a href="{{ url_for('national_operations') }}" class="submit-button">Cancel</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+    
+    <!-- Data Table -->
+    <table class="content-table">
+        <tr>
+            <th>Provider Name</th>
+            <th>Country Name</th>
+            <th>Edit/Save</th>
+        </tr>
+        {% for national_op in national_operations_data %}
+            {% if edit_line != None and edit_line['0'] == national_op.providerName and edit_line['1'] == national_op.countryName %}
+                <form action="{{ url_for('update_national_operation') }}" method="post">
+                    <tr>
+                        <td>
+                            <select id="updateProviderID" name="updateProviderID" required>
+                                {% for provider in providers_data %}
+                                    {% if provider.providerName == national_op.providerName %}
+                                        <option value='{"0":"{{ provider.providerID }}", "1":"{{ provider.providerName }}"}' selected>{{ provider.providerName }}</option>
+                                    {% else %}
+                                        <option value='{"0":"{{ provider.providerID }}", "1":"{{ national_op.providerName }}"}'>{{ provider.providerName }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select id="updateCountryID" name="updateCountryID" required>
+                                <option value='{"0":"", "1":"{{ national_op.countryName }}"}'>NULL</option>
+                                {% for country in countries_data %}
+                                    {% if country.countryName == national_op.countryName %}
+                                        <option value='{"0":"{{ country.countryID }}", "1":"{{ country.countryName }}"}' selected>{{ country.countryName }}</option>
+                                    {% else %}
+                                        <option value='{"0":"{{ country.countryID }}", "1":"{{ national_op.countryName }}"}'>{{ country.countryName }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button type="submit" class="submit-button">Save</button>
+                        </td>
+                        <td>
+                            <button onclick="confirmDelete(this)">Delete</button>
+                        </td>
+                    </tr>
+                </form>
+            {% else %}
+                <tr id='{"0":"{{ national_op.providerName }}","1":"{{ national_op.countryName }}"}'>
+                    <td>
+                        <span data-field="providerName" contenteditable="false">{{ national_op.providerName }}</span>
+                    </td>
+                    <td>
+                        {% if national_op.countryName == None %}
+                            <span data-field="countryName" contenteditable="false">NULL</span>
+                        {% else %}
+                            <span data-field="countryName" contenteditable="false">{{ national_op.countryName }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{{ url_for('edit_national_operation') }}" method="post">
+                            <input type ="hidden" name ="row" value='{"0":"{{ national_op.providerName }}","1":"{{ national_op.countryName }}"}' />
+                            <button type="submit" id="name_pair">Edit</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>    
+
+    </body>
+    </html>
+    
