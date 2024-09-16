@@ -1,7 +1,6 @@
-from flask import Flask, render_template, json, redirect, jsonify, url_for
+from flask import Flask, render_template, json, redirect, jsonify, url_for, request
 from dotenv import load_dotenv, find_dotenv
 from flask_mysqldb import MySQL
-from flask import request
 import os
 
 app = Flask(__name__)
