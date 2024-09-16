@@ -43,4 +43,4 @@ Records the ongoing provision of an energy type from a provider to a consumers.
 Each table has an HTML interface featuring CRUD operations to **Read** the table, **Create** new entries, and **Update** and **Delete** entries inline. 
 
 - Where null values are allowed, they may be entered by inputting "null" (case-insensitive), or leaving the field blank. 
-- Deletion of rows from any of these tables deletes all M:N entries which reference them, save for Countries table delete operation, which updates National Operations references to deleted countries to NULL.
+- Deletion of rows from any of these tables deletes all M:N entries which reference them, save for the `Countries` table delete operation, which updates `National_Operations` references to deleted countries to NULL.
