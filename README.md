@@ -3,7 +3,7 @@
 GEAD is a Flask full-stack web app to manage a MySQL/MariaDB database tracking the relationships between energy providers and municipal consumers in different countries.
 
 ## Usage
-- In a Python virtual environment, execute `pip install requirements.txt`
+- In a Python virtual environment, execute `pip install -r requirements.txt`
 
 - In your database management tool of choice
     - Create a new database
