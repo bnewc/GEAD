@@ -719,5 +719,5 @@ def add_provision():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', os.environ.get("PORT")))
-    app.run(port=8000, debug=True, host='127.0.0.1')
+    port = int(os.environ.get('PORT', 58432))
+    app.run(port=port, debug=True, host='127.0.0.1')
