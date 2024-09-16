@@ -8,7 +8,7 @@ GEAD is a Flask full-stack web app to manage a MySQL/MariaDB database tracking t
     - Create a new database
     - Execute `GEAD_DDL.sql` to create the tables
     - Optionally, execute `SAMPLE_DATA.sql` to insert sample entries
-- Create a `.env` file containing the following parameters
+- In the `site/` folder, create a `.env` file containing the following parameters
     - `DBHOST`  - host of MySQL/MariaDB database
     - `DBUSER`  - database username
     - `DBPW`    - user password
