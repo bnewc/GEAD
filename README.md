@@ -1,6 +1,15 @@
 # GEAD: Global Energy Accessibility Database
 
-GEAD is a Flask full-stack web app to manage a MySQL/MariaDB database tracking the relationships between energy providers and municipal consumers in different countries. 
+GEAD is a Flask full-stack web app to manage a MySQL/MariaDB database tracking the relationships between energy providers and municipal consumers in different countries.
+
+## Usage
+- In a Python virtual environment, execute `pip install requirements.txt`
+- In your database management tool of choice, execute `GEAD_DDL.sql` to create the database
+- Create a `.env` file containing the following parameters
+    - `DBHOST`  - host of MySQL/MariaDB database
+    - `DBUSER`  - database username
+    - `DBPW`    - user password
+    - `DB`      - name of database
 
 ## Database Schema
 
@@ -22,3 +31,10 @@ Records the ongoing provision of an energy type from a provider to a consumers.
 - `Consumers` can receive multiple `Energy_Types` from multiple `Providers`
 
 ## Interface
+
+![Countries](images/countries.png "Countries Interface")
+
+Each table has an HTML interface featuring CRUD operations to **Read** the table, **Create** new entries, and **Update** and **Delete** entries inline. 
+
+- Where null values are allowed, they may be entered by inputting "null" (case-insensitive), or leaving the field blank. 
+- Deletion of rows from any of these tables deletes all M:N entries which reference them, save for Countries table delete operation, which updates National Operations references to deleted countries to NULL.
