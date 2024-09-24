@@ -1,6 +1,6 @@
 INSERT INTO Countries (countryName, globalRegion, population, GDP)
 VALUES
-	('United States', 'North America', 3310002651, 21.4),
+	('United States', 'North America', 331002651, 21.4),
 	('China', 'Asia', 1439323776, 14.3),
     ('India', 'Asia', 1380004385, 2.8),
     ('Brazil', 'South America', 212559417, 1.4),

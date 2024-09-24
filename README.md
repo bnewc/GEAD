@@ -38,7 +38,7 @@ Records the ongoing provision of an energy type from a provider to a consumers.
 
 ## Interface
 
-![Countries](images/countries.png "Countries Interface")
+![Consumers](images/consumers.png "Consumers Interface")
 
 Each table has an HTML interface featuring CRUD operations to **Read** the table, **Create** new entries, and **Update** and **Delete** entries inline. 
 
